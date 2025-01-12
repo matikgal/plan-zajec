@@ -5,6 +5,7 @@ function App() {
 		<>
 			<div>
 				<p>Siema</p>
+				<p>test2</p>
 			</div>
 		</>
 	)
