@@ -1,10 +1,11 @@
 import './App.css'
+import './index.css'
 
 function App() {
 	return (
 		<>
-			<div>
-				<p>Siema</p>
+			<div className="w-full">
+				<p className="text-5xl text-center">Siema</p>
 				<p>test2</p>
 			</div>
 		</>
