@@ -30,6 +30,12 @@ export default function MainComponent() {
 		wydzial: '',
 		tydzien: '', // Przechowuje zakres tygodnia, np. "30.09-06.10"
 	})
+	const [currentWeek, setCurrentWeek] = useState<string>('')
+
+	useEffect(() => {
+		const week = getCurrentWeekRange()
+		setCurrentWeek(week)
+	}, [])
 	const [daysOfWeek] = useState(['Poniedziałek', 'Wtorek', 'Środa', 'Czwartek', 'Piątek'])
 
 	useEffect(() => {
@@ -72,20 +78,29 @@ export default function MainComponent() {
 	const getUniqueValues = (key: keyof DataItem) => {
 		return [...new Set(data.map(item => item[key]))]
 	}
+	function getCurrentWeekRange(): string {
+		const today = new Date()
 
-	// Funkcja, która sprawdza, czy tygodnie się pokrywają
-	const isWeekInRange = (itemWeek: string, selectedWeek: string) => {
-		if (!selectedWeek) return true
+		// Oblicz dzień tygodnia (poniedziałek = 1, niedziela = 7)
+		const dayOfWeek = today.getDay() === 0 ? 7 : today.getDay()
 
-		const [startDate, endDate] = selectedWeek.split('-')
-		const itemDates = itemWeek.split('-')
+		// Oblicz datę poniedziałku
+		const monday = new Date(today)
+		monday.setDate(today.getDate() - (dayOfWeek - 1))
 
-		return (
-			(startDate <= itemDates[0] && endDate >= itemDates[1]) ||
-			(startDate <= itemDates[1] && endDate >= itemDates[0]) ||
-			(startDate >= itemDates[0] && endDate <= itemDates[1])
-		)
+		// Oblicz datę niedzieli
+		const sunday = new Date(today)
+		sunday.setDate(today.getDate() + (7 - dayOfWeek))
+
+		// Funkcja do formatowania dat w formacie dd.mm
+		const formatDate = (date: Date) =>
+			`${String(date.getDate()).padStart(2, '0')}.${String(date.getMonth() + 1).padStart(2, '0')}`
+
+		const result = `${formatDate(monday)}-${formatDate(sunday)}`
+		return result
 	}
+
+	console.log(`Aktualny tydzień: ${currentWeek}`)
 
 	return (
 		<div className="w-full min-h-screen flex items-center justify-center bg-gray-900 relative overflow-hidden p-4">
@@ -143,7 +158,7 @@ export default function MainComponent() {
 								<h3 className="font-bold text-center text-white mb-4">{day}</h3>
 								<div className="space-y-4">
 									{filteredData
-										.filter(item => item.dzien_tygodnia === day && isWeekInRange(item.tydzien, filters.tydzien))
+										.filter(item => item.dzien_tygodnia === day)
 										.sort((a, b) => a.godzina_od.localeCompare(b.godzina_od))
 										.map(item => (
 											<div key={item.id} className="p-4 bg-gray-900 border border-gray-700 rounded shadow">
