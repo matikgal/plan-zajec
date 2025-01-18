@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { database } from '../../firebaseConfig' // Ścieżka do konfiguracji Firebase
 import { ref, get } from 'firebase/database'
+import { BiSolidLeftArrow, BiSolidRightArrow } from 'react-icons/bi'
 
 type DataItem = {
 	id: string
@@ -110,8 +111,8 @@ export default function MainComponent() {
 	return (
 		<div className="w-full min-h-screen flex items-center justify-center bg-gray-900 relative overflow-hidden p-4">
 			<div className="absolute inset-0 bg-gradient-to-r from-purple-500 via-pink-500 to-blue-500 opacity-30 blur-xl"></div>
-
-			<div className="relative bg-white bg-opacity-10 backdrop-blur-lg border border-white/20 rounded-lg shadow-lg p-6 flex flex-col gap-8 xl:flex-row max-w-screen w-full">
+			{/* Panel filtrów */}
+			<div className="relative bg-white bg-opacity-10 backdrop-blur-lg border border-white/20 rounded-lg shadow-lg p-6 flex flex-col gap-8 xl:flex-row max-w-screen w-full ">
 				<div className="w-full xl:w-1/3">
 					<h1 className="text-2xl font-bold text-white mb-6">Filtruj dane</h1>
 					<div className="grid grid-cols-2 xl:grid-cols-1 gap-6">
@@ -134,7 +135,7 @@ export default function MainComponent() {
 								</select>
 							</div>
 						))}
-
+						{/* Filtr tygodnia */}
 						<div>
 							<label className="block text-lg text-gray-200 mb-2 capitalize" htmlFor="tydzien">
 								Tydzień:
@@ -154,9 +155,20 @@ export default function MainComponent() {
 						</div>
 					</div>
 				</div>
-
+				{/* Plan zajęć */}
 				<div className="w-full">
-					<h2 className="text-xl font-bold text-white mb-4">Plan zajęć</h2>
+					<div className="flex items-center justify-center">
+						<div className="flex items-center justify-center gap-4 mb-6">
+							<a className="px-4 py-2 text-white hover:scale-125 duration-200 cursor-pointer">
+								<BiSolidLeftArrow />
+							</a>
+							<h2 className="text-lg font-bold text-gray-200">Tydzien</h2>
+							<a className="px-4 py-2 text-white hover:scale-125 duration-200 cursor-pointer">
+								<BiSolidRightArrow />
+							</a>
+						</div>
+					</div>
+
 					<div className="grid grid-cols-1 lg:grid-cols-5 gap-4">
 						{daysOfWeek.map(day => (
 							<div key={day} className="p-4 bg-gray-800 rounded-lg shadow-md">
