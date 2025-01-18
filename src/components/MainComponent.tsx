@@ -162,7 +162,8 @@ export default function MainComponent() {
 							<a className="px-4 py-2 text-white hover:scale-125 duration-200 cursor-pointer">
 								<BiSolidLeftArrow />
 							</a>
-							<h2 className="text-lg font-bold text-gray-200">Tydzien</h2>
+							<h2 className="text-lg font-bold text-gray-200">{currentWeek}</h2>
+
 							<a className="px-4 py-2 text-white hover:scale-125 duration-200 cursor-pointer">
 								<BiSolidRightArrow />
 							</a>
