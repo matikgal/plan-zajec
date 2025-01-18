@@ -106,6 +106,41 @@ export default function MainComponent() {
 		return result
 	}
 
+	const getWeekRange = (currentWeek: string, direction: 'next' | 'previous'): string => {
+		// Rozdzielamy daty początkową i końcową
+		const [startDateStr, endDateStr] = currentWeek.split('-')
+
+		// Funkcja do konwersji daty z formatu dd.mm na yyyy-mm-dd
+		const convertToDate = (dateStr: string): Date => {
+			const [day, month] = dateStr.split('.').map(Number)
+			const year = new Date().getFullYear() // Bierzemy aktualny rok
+			return new Date(year, month - 1, day) // Tworzymy datę w formacie yyyy-mm-dd
+		}
+
+		// Przekształcamy obie daty
+		const startDate = convertToDate(startDateStr)
+		const endDate = convertToDate(endDateStr)
+
+		// Dodajemy lub odejmujemy 7 dni, w zależności od kierunku
+		const daysToAddOrSubtract = direction === 'next' ? 7 : -7
+		startDate.setDate(startDate.getDate() + daysToAddOrSubtract)
+		endDate.setDate(endDate.getDate() + daysToAddOrSubtract)
+
+		// Funkcja do formatowania daty na dd.mm
+		const formatDate = (date: Date) => {
+			const day = String(date.getDate()).padStart(2, '0')
+			const month = String(date.getMonth() + 1).padStart(2, '0')
+			return `${day}.${month}`
+		}
+
+		// Zwracamy zakres wybranego tygodnia
+		const weekRange = `${formatDate(startDate)}-${formatDate(endDate)}`
+		console.log(`${direction === 'next' ? 'Następny' : 'Poprzedni'} tydzień: ${weekRange}`)
+		setCurrentWeek(weekRange) // Ustawiamy stan dla odpowiedniego tygodnia
+
+		return weekRange
+	}
+
 	console.log(`Aktualny tydzień: ${currentWeek}`)
 
 	return (
@@ -144,8 +179,11 @@ export default function MainComponent() {
 								id="tydzien"
 								className="p-2 rounded w-full bg-gray-800 text-gray-200 border border-gray-700 focus:ring-2 focus:ring-blue-500"
 								value={filters.tydzien}
-								onChange={e => handleFilterChange('tydzien', e.target.value)}>
-								<option value={currentWeek}>Aktualny</option>
+								onChange={e => {
+									handleFilterChange('tydzien', e.target.value)
+									setCurrentWeek(e.target.value)
+								}}>
+								<option value={currentWeek}>{currentWeek}</option>
 								{[...new Set(data.map(item => item.tydzien))].map(week => (
 									<option key={week} value={week}>
 										{week}
@@ -159,12 +197,16 @@ export default function MainComponent() {
 				<div className="w-full">
 					<div className="flex items-center justify-center">
 						<div className="flex items-center justify-center gap-4 mb-6">
-							<a className="px-4 py-2 text-white hover:scale-125 duration-200 cursor-pointer">
+							<a
+								className="px-4 py-2 text-white hover:scale-125 duration-200 cursor-pointer"
+								onClick={() => getWeekRange(currentWeek, 'previous') && handleFilterChange('tydzien', currentWeek)}>
 								<BiSolidLeftArrow />
 							</a>
 							<h2 className="text-lg font-bold text-gray-200">{currentWeek}</h2>
 
-							<a className="px-4 py-2 text-white hover:scale-125 duration-200 cursor-pointer">
+							<a
+								className="px-4 py-2 text-white hover:scale-125 duration-200 cursor-pointer"
+								onClick={() => getWeekRange(currentWeek, 'next') && handleFilterChange('tydzien', currentWeek)}>
 								<BiSolidRightArrow />
 							</a>
 						</div>
