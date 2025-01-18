@@ -36,6 +36,11 @@ export default function MainComponent() {
 		const week = getCurrentWeekRange()
 		setCurrentWeek(week)
 	}, [])
+
+	useEffect(() => {
+		handleFilterChange('tydzien', currentWeek)
+	}, [currentWeek])
+
 	const [daysOfWeek] = useState(['Poniedziałek', 'Wtorek', 'Środa', 'Czwartek', 'Piątek'])
 
 	useEffect(() => {
@@ -139,7 +144,7 @@ export default function MainComponent() {
 								className="p-2 rounded w-full bg-gray-800 text-gray-200 border border-gray-700 focus:ring-2 focus:ring-blue-500"
 								value={filters.tydzien}
 								onChange={e => handleFilterChange('tydzien', e.target.value)}>
-								<option value="">Wszystkie</option>
+								<option value={currentWeek}>Aktualny</option>
 								{[...new Set(data.map(item => item.tydzien))].map(week => (
 									<option key={week} value={week}>
 										{week}
