@@ -11,6 +11,9 @@
   },
   "dependencies": {
     "cookies-ts": "^1.0.5",
+    "@emotion/react": "^11.14.0",
+    "@emotion/styled": "^11.14.0",
+    "@mui/material": "^6.4.1",
     "firebase": "^11.2.0",
     "firebase-admin": "^13.0.2",
     "js-cookie": "^3.0.5",

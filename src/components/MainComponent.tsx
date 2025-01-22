@@ -3,6 +3,9 @@ import { database } from '../../firebaseConfig' // Ścieżka do konfiguracji Fir
 import { ref, get } from 'firebase/database'
 import { BiSolidLeftArrow, BiSolidRightArrow } from 'react-icons/bi'
 import Cookies from 'cookies-ts'
+import Select from '@mui/material/Select'
+import MenuItem from '@mui/material/MenuItem'
+import '../index.css'
 
 type DataItem = {
 	id: string
@@ -22,16 +25,39 @@ type DataItem = {
 }
 
 const cookies = new Cookies()
+type FilterKey = 'stopien' | 'wydzial' | 'typ' | 'kierunek' | 'semestr' | 'grupa'
 
 export default function MainComponent() {
+	const polishLabels: Record<FilterKey, string> = {
+		stopien: 'Stopień',
+		wydzial: 'Wydział',
+		typ: 'Typ',
+		kierunek: 'Kierunek',
+		semestr: 'Semestr',
+		grupa: 'Grupa',
+	}
+
+	const timeToSlotIndex = (time: string): number => {
+		const [hour, minute] = time.split(':').map(Number)
+		const totalMinutes = hour * 60 + minute
+		const startTime = 8 * 60
+		return Math.floor((totalMinutes - startTime) / 15)
+	}
+
+	const calculateSlots = (startTime: string, endTime: string): number => {
+		const startIndex = timeToSlotIndex(startTime)
+		const endIndex = timeToSlotIndex(endTime)
+		return endIndex - startIndex
+	}
+
 	const [data, setData] = useState<DataItem[]>([])
 	const [filters, setFilters] = useState<Record<string, string | null>>({
-		grupa: '',
-		kierunek: '',
-		semestr: '',
-		stopien: '',
-		typ: '',
 		wydzial: '',
+		typ: '',
+		kierunek: '',
+		stopien: '',
+		semestr: '',
+		grupa: '',
 		tydzien: '',
 	})
 	const [currentWeek, setCurrentWeek] = useState<string>('')
@@ -92,7 +118,7 @@ export default function MainComponent() {
 	}, [filters])
 
 	// Obsługa zmiany filtrów
-	const handleFilterChange = (key: string, value: string) => {
+	const handleFilterChange = (key: string, value: string | null) => {
 		setFilters(prevFilters => ({ ...prevFilters, [key]: value }))
 	}
 
@@ -150,16 +176,16 @@ export default function MainComponent() {
 	}
 
 	return (
-		<div className="w-full min-h-screen flex items-center justify-center bg-gray-900 relative overflow-hidden p-4">
+		<div className="w-full min-h-screen flex  justify-center bg-gray-900 relative overflow-hidden p-4 ">
 			<div className="absolute inset-0 bg-gradient-to-r from-purple-500 via-pink-500 to-blue-500 opacity-30 blur-xl"></div>
 			<div className="relative bg-white bg-opacity-10 backdrop-blur-lg border border-white/20 rounded-lg shadow-lg p-6 flex flex-col gap-8 xl:flex-row max-w-screen w-full">
 				{/* Panel filtrów */}
 				<div className="w-full xl:w-1/3">
 					<h1 className="text-2xl font-bold text-white mb-6">Filtruj dane</h1>
 					<div className="grid grid-cols-2 xl:grid-cols-1 gap-6">
-						{['grupa', 'kierunek', 'semestr', 'stopien', 'typ', 'wydzial'].map(filterKey => (
+						{['wydzial', 'typ', 'kierunek', 'stopien', 'semestr', 'grupa'].map(filterKey => (
 							<div key={filterKey}>
-								<label className="block text-lg text-gray-200 mb-2 capitalize" htmlFor={filterKey}>
+								{/* <label className="block text-lg text-gray-200 mb-2 capitalize" htmlFor={filterKey}>
 									{filterKey}:
 								</label>
 								<select
@@ -173,28 +199,47 @@ export default function MainComponent() {
 											{value}
 										</option>
 									))}
-								</select>
+								</select> */}
+
+								{/* <label className="block text-lg text-gray-200 mb-2 capitalize" htmlFor={filterKey}>
+									{filterKey}:
+								</label> */}
+								<Select
+									id={filterKey}
+									className="capitalize rounded w-full bg-gray-800 !text-gray-200 mb-5"
+									value={filters[filterKey as keyof typeof filters]}
+									onChange={e => handleFilterChange(filterKey, e.target.value)}
+									displayEmpty>
+									<MenuItem value="" className="capitalize !text-gray-800" disabled>
+										{polishLabels[filterKey as FilterKey] || filterKey}
+									</MenuItem>
+									{getUniqueValues(filterKey as keyof DataItem).map(value => (
+										<MenuItem key={value} value={value} className="text-gray-200">
+											{value}
+										</MenuItem>
+									))}
+								</Select>
 							</div>
 						))}
 						<div>
 							<label className="block text-lg text-gray-200 mb-2 capitalize" htmlFor="tydzien">
 								Tydzień:
 							</label>
-							<select
+							<Select
 								id="tydzien"
-								className="p-2 rounded w-full bg-gray-800 text-gray-200 border border-gray-700 focus:ring-2 focus:ring-blue-500"
-								value={filters.tydzien || ''}
+								className=" rounded w-full bg-gray-800 !text-gray-200 border border-gray-700 focus:ring-2 focus:ring-blue-500"
+								value={filters.tydzien}
 								onChange={e => {
-									setCurrentWeek(e.target.value)
-									handleFilterChange('tydzien', e.target.value)
+									setCurrentWeek(e.target.value || '')
+									handleFilterChange('tydzien', e.target.value || '')
 								}}>
-								<option value={currentWeek}>{currentWeek}</option>
+								<MenuItem value={currentWeek}>{currentWeek}</MenuItem>
 								{[...new Set(data.map(item => item.tydzien))].map(week => (
-									<option key={week} value={week}>
+									<MenuItem key={week} value={week}>
 										{week}
-									</option>
+									</MenuItem>
 								))}
-							</select>
+							</Select>
 						</div>
 					</div>
 				</div>
@@ -219,20 +264,44 @@ export default function MainComponent() {
 						{daysOfWeek.map(day => (
 							<div key={day} className="p-4 bg-gray-800 rounded-lg shadow-md">
 								<h3 className="font-bold text-center text-white mb-4">{day}</h3>
-								<div className="space-y-4">
+								<div className="relative" style={{ height: 'calc(52 * var(--slot-height))' }}>
+									{/* Kratki tła */}
+									{Array.from({ length: 52 }).map((_, index) => (
+										<div
+											key={index}
+											className="absolute w-full border-b border-gray-700"
+											style={{ top: `calc(${index} * var(--slot-height))`, height: 'var(--slot-height)' }}></div>
+									))}
+
+									{/* Przedmioty */}
 									{filteredData
 										.filter(item => item.dzien_tygodnia === day)
 										.sort((a, b) => a.godzina_od.localeCompare(b.godzina_od))
-										.map(item => (
-											<div key={item.id} className="p-4 bg-gray-900 border border-gray-700 rounded shadow">
-												<div className="font-bold text-white">{item.przedmiot}</div>
-												<div className="text-gray-400">{item.prowadzacy}</div>
-												<div className="text-gray-400">{item.sala}</div>
-												<div className="text-gray-200">
-													{item.godzina_od} - {item.godzina_do}
+										.map(item => {
+											const startSlot = timeToSlotIndex(item.godzina_od)
+											const slots = calculateSlots(item.godzina_od, item.godzina_do)
+											const height = `calc(${slots} * var(--slot-height))` // Wysokość w jednostkach względnych
+
+											return (
+												<div
+													key={item.id}
+													className="absolute w-full p-2 bg-gray-900 border border-gray-700 rounded shadow"
+													style={{ top: `calc(${startSlot} * var(--slot-height))`, height }}>
+													<div className="flex fl">
+														<div className="w-1/2">
+															<div className="font-bold text-white">{item.przedmiot}</div>
+															<div className="text-gray-400">{item.prowadzacy}</div>
+														</div>
+														<div className="w-1/2">
+															<div className="text-gray-400">{item.sala}</div>
+															<div className="text-gray-200">
+																{item.godzina_od} - {item.godzina_do}
+															</div>
+														</div>
+													</div>
 												</div>
-											</div>
-										))}
+											)
+										})}
 								</div>
 							</div>
 						))}
