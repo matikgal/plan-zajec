@@ -5,6 +5,7 @@ import { BiSolidLeftArrow, BiSolidRightArrow } from 'react-icons/bi'
 import Cookies from 'cookies-ts'
 import Select from '@mui/material/Select'
 import MenuItem from '@mui/material/MenuItem'
+import { FaBookmark } from 'react-icons/fa6'
 import '../index.css'
 
 type DataItem = {
@@ -88,8 +89,12 @@ export default function MainComponent() {
 		fetchData()
 	}, [])
 
+	//Kolor do przycisku ulubionych
+	const [favColor, setFavColor] = useState('white')
+
 	// Odczytaj filtry z ciasteczek po załadowaniu komponentu
 	useEffect(() => {
+		setFavColor('violet')
 		const savedFilters = {
 			grupa: cookies.get('filter_grupa') || '',
 			kierunek: cookies.get('filter_kierunek') || '',
@@ -110,15 +115,19 @@ export default function MainComponent() {
 
 	// Zapisz każdy filtr do osobnego ciasteczka przy każdej zmianie
 	useEffect(() => {
-		Object.entries(filters).forEach(([key, value]) => {
-			if (value !== null && value !== '') {
-				cookies.set(`filter_${key}`, value, { expires: 365 }) // Ciasteczko wygasa po 365 dniach
-			}
-		})
+		if (cookies.get('favourite') === 'false') {
+			Object.entries(filters).forEach(([key, value]) => {
+				if (value !== null && value !== '') {
+					cookies.set(`filter_${key}`, value, { expires: 365 }) // Ciasteczko wygasa po 365 dniach
+				}
+			})
+		}
 	}, [filters])
 
 	// Obsługa zmiany filtrów
 	const handleFilterChange = (key: string, value: string | null) => {
+		setFavColor('white')
+
 		setFilters(prevFilters => ({ ...prevFilters, [key]: value }))
 	}
 
@@ -131,7 +140,19 @@ export default function MainComponent() {
 	const getUniqueValues = (key: keyof DataItem) => {
 		return [...new Set(data.map(item => item[key]))]
 	}
+	//Funkcja do zapisywania ulubionych
+	const saveFavourite = () => {
+		console.log('Zapisano ulubione')
+		setFavColor('violet')
+		cookies.set('favourite', true, { expires: 365 })
+		Object.entries(filters).forEach(([key, value]) => {
+			if (value !== null && value !== '') {
+				cookies.set(`filter_${key}`, value, { expires: 365 }) // Ciasteczko wygasa po 365 dniach
+			}
+		})
 
+		cookies.set('favourite', true, { expires: 365 })
+	}
 	// Funkcja do obliczania bieżącego tygodnia
 	const getCurrentWeekRange = (): string => {
 		const today = new Date()
@@ -247,6 +268,9 @@ export default function MainComponent() {
 				<div className="w-full">
 					<div className="flex items-center justify-center">
 						<div className="flex items-center justify-center gap-4 mb-6">
+							<div className="">
+								<FaBookmark color={favColor} onClick={saveFavourite} />
+							</div>
 							<button
 								className="px-4 py-2 text-white hover:scale-125 duration-200 cursor-pointer"
 								onClick={() => handleWeekChange('previous')}>
