@@ -118,7 +118,7 @@ export default function MainComponent() {
 		if (cookies.get('favourite') === 'false') {
 			Object.entries(filters).forEach(([key, value]) => {
 				if (value !== null && value !== '') {
-					cookies.set(`filter_${key}`, value, { expires: 365 }) // Ciasteczko wygasa po 365 dniach
+					cookies.set(`filter_${key}`, value, { expires: 365 })
 				}
 			})
 		}
@@ -126,8 +126,6 @@ export default function MainComponent() {
 
 	// Obsługa zmiany filtrów
 	const handleFilterChange = (key: string, value: string | null) => {
-		setFavColor('white')
-
 		setFilters(prevFilters => ({ ...prevFilters, [key]: value }))
 	}
 
@@ -142,16 +140,19 @@ export default function MainComponent() {
 	}
 	//Funkcja do zapisywania ulubionych
 	const saveFavourite = () => {
-		console.log('Zapisano ulubione')
-		setFavColor('violet')
-		cookies.set('favourite', true, { expires: 365 })
-		Object.entries(filters).forEach(([key, value]) => {
-			if (value !== null && value !== '') {
-				cookies.set(`filter_${key}`, value, { expires: 365 }) // Ciasteczko wygasa po 365 dniach
-			}
-		})
-
-		cookies.set('favourite', true, { expires: 365 })
+		if (cookies.get('favourite') === 'false') {
+			console.log('Zapisano ulubione')
+			setFavColor('violet')
+			cookies.set('favourite', true, { expires: 365 })
+			Object.entries(filters).forEach(([key, value]) => {
+				if (value !== null && value !== '') {
+					cookies.set(`filter_${key}`, value, { expires: 365 }) // Ciasteczko wygasa po 365 dniach
+				}
+			})
+		} else {
+			cookies.set('favourite', false, { expires: 365 })
+			setFavColor('white')
+		}
 	}
 	// Funkcja do obliczania bieżącego tygodnia
 	const getCurrentWeekRange = (): string => {
@@ -266,11 +267,15 @@ export default function MainComponent() {
 				</div>
 				{/* Plan zajęć */}
 				<div className="w-full">
-					<div className="flex items-center justify-center">
+					<div className="flex items-center justify-center relative">
+						<div className="">
+							<FaBookmark
+								color={favColor}
+								onClick={saveFavourite}
+								className="scale-[2] duration-200 active:scale-100 cursor-pointer absolute left-10 top-3"
+							/>
+						</div>
 						<div className="flex items-center justify-center gap-4 mb-6">
-							<div className="">
-								<FaBookmark color={favColor} onClick={saveFavourite} />
-							</div>
 							<button
 								className="px-4 py-2 text-white hover:scale-125 duration-200 cursor-pointer"
 								onClick={() => handleWeekChange('previous')}>
