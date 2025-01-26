@@ -3,6 +3,5 @@
 @tailwind utilities;
 
 :root {
-    --slot-height: 1.5rem; /* Wysokość kratki */
-  }
-
+	--slot-height: 0.8rem; /* Wysokość kratki */
+}

@@ -89,8 +89,14 @@ export default function MainComponent() {
 		fetchData()
 	}, [])
 
-	//Kolor do przycisku ulubionych
-	const [favColor, setFavColor] = useState('white')
+	const [tableData, setTableData] = useState<DataItem[]>([])
+
+	const handleSearch = () => {
+		const filtered = data.filter(item =>
+			Object.entries(filters).every(([key, value]) => (value ? item[key as keyof DataItem] === value : true))
+		)
+		setTableData(filtered)
+	}
 
 	// Odczytaj filtry z ciasteczek po załadowaniu komponentu
 	useEffect(() => {
@@ -130,9 +136,9 @@ export default function MainComponent() {
 	}
 
 	// Filtruj dane na podstawie wybranych opcji
-	const filteredData = data.filter(item =>
-		Object.entries(filters).every(([key, value]) => (value ? item[key as keyof DataItem] === value : true))
-	)
+	// const filteredData = data.filter(item =>
+	// 	Object.entries(filters).every(([key, value]) => (value ? item[key as keyof DataItem] === value : true))
+	// )
 
 	// Pobierz unikalne wartości dla danego pola
 	const getUniqueValues = (key: keyof DataItem) => {
@@ -207,25 +213,6 @@ export default function MainComponent() {
 					<div className="grid grid-cols-2 xl:grid-cols-1 gap-6">
 						{['wydzial', 'typ', 'kierunek', 'stopien', 'semestr', 'grupa'].map(filterKey => (
 							<div key={filterKey}>
-								{/* <label className="block text-lg text-gray-200 mb-2 capitalize" htmlFor={filterKey}>
-									{filterKey}:
-								</label>
-								<select
-									id={filterKey}
-									className="p-2 rounded w-full bg-gray-800 text-gray-200 border border-gray-700 focus:ring-2 focus:ring-blue-500"
-									value={filters[filterKey] || ''}
-									onChange={e => handleFilterChange(filterKey, e.target.value)}>
-									<option value="">Wszystkie</option>
-									{getUniqueValues(filterKey as keyof DataItem).map(value => (
-										<option key={value} value={value}>
-											{value}
-										</option>
-									))}
-								</select> */}
-
-								{/* <label className="block text-lg text-gray-200 mb-2 capitalize" htmlFor={filterKey}>
-									{filterKey}:
-								</label> */}
 								<Select
 									id={filterKey}
 									className="capitalize rounded w-full bg-gray-800 !text-gray-200 mb-5"
@@ -263,6 +250,11 @@ export default function MainComponent() {
 								))}
 							</Select>
 						</div>
+						<button
+							onClick={handleSearch}
+							className="  px-4 py-2 rounded-lg bg-[#EE82EE] hover:bg-[#e964e9] transition-all duration-200 mx-5 mt-2 font-bold uppercase tracking-widest text-gray-800">
+							Szukaj
+						</button>
 					</div>
 				</div>
 				{/* Plan zajęć */}
@@ -293,6 +285,7 @@ export default function MainComponent() {
 						{daysOfWeek.map(day => (
 							<div key={day} className="p-4 bg-gray-800 rounded-lg shadow-md">
 								<h3 className="font-bold text-center text-white mb-4">{day}</h3>
+
 								<div className="relative" style={{ height: 'calc(52 * var(--slot-height))' }}>
 									{/* Kratki tła */}
 									{Array.from({ length: 52 }).map((_, index) => (
@@ -303,30 +296,30 @@ export default function MainComponent() {
 									))}
 
 									{/* Przedmioty */}
-									{filteredData
+									{tableData
 										.filter(item => item.dzien_tygodnia === day)
 										.sort((a, b) => a.godzina_od.localeCompare(b.godzina_od))
 										.map(item => {
 											const startSlot = timeToSlotIndex(item.godzina_od)
 											const slots = calculateSlots(item.godzina_od, item.godzina_do)
-											const height = `calc(${slots} * var(--slot-height))` // Wysokość w jednostkach względnych
+											const height = `calc(${slots} * var(--slot-height))`
 
 											return (
 												<div
 													key={item.id}
 													className="absolute w-full p-2 bg-gray-900 border border-gray-700 rounded shadow"
 													style={{ top: `calc(${startSlot} * var(--slot-height))`, height }}>
-													<div className="flex fl">
-														<div className="w-1/2">
+													<div className="flex">
+														<div className="flex flex-row justify-around  w-full items-center">
 															<div className="font-bold text-white">{item.przedmiot}</div>
-															<div className="text-gray-400">{item.prowadzacy}</div>
-														</div>
-														<div className="w-1/2">
-															<div className="text-gray-400">{item.sala}</div>
-															<div className="text-gray-200">
+															<div className="text-gray-200 text-sm ">
 																{item.godzina_od} - {item.godzina_do}
 															</div>
 														</div>
+														{/* <div className="w-1/2 flex flex-col items-center ">
+															<div className="text-gray-400">{item.prowadzacy}</div>
+															<div className="text-gray-400">{item.sala}</div>
+														</div> */}
 													</div>
 												</div>
 											)
