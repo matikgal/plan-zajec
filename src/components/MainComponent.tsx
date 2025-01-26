@@ -65,6 +65,9 @@ export default function MainComponent() {
 
 	const daysOfWeek = ['Poniedziałek', 'Wtorek', 'Środa', 'Czwartek', 'Piątek']
 
+	//Kolor do przycisku ulubionych
+	const [favColor, setFavColor] = useState('white')
+
 	// Pobierz dane z Firebase
 	useEffect(() => {
 		const fetchData = async () => {
